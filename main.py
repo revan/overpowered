@@ -19,6 +19,8 @@ class OverpoweredApp(rumps.App):
         self.logout_button = rumps.MenuItem('Logout and Quit')
         self.logout_button.set_callback(self._logout_callback)
 
+        self.join_link = None
+        self.join_button = rumps.MenuItem('Join next meeting')
         self._have_notified = set()
 
     @rumps.timer(5)
@@ -26,12 +28,21 @@ class OverpoweredApp(rumps.App):
         events = gcal.fetch_events()
 
         self.menu.clear()
-        self.menu.update(e.display() for e in events[1:])
+        if events:
+            self.title = events[0].display()
+            if events[0].join_link:
+                self.join_link = events[0].join_link
+                self.join_button.set_callback(self._join_callback)
+                self.menu.add(self.join_button)
+            else:
+                self.menu.add("No link for next meeting.")
+        self.menu.add(None)
+        self.menu.update(e.display() for e in events[1:] if arrow.get(e.end) < arrow.utcnow().shift(days=1))
+        self.menu.add(None)
         self.menu.add(self.logout_button)
         self.menu.add(self.quit_button)
 
         if events:
-            self.title = events[0].display()
             about_to_start = (arrow.get(events[0].start) > arrow.utcnow() and
                               arrow.get(events[0].start) - arrow.utcnow() < arrow.arrow.timedelta(minutes=1))
             mid_event = (arrow.get(events[0].start)
@@ -85,6 +96,9 @@ class OverpoweredApp(rumps.App):
     def _logout_callback(self, _):
         gcal.logout()
         self.quit_button.callback(None)
+
+    def _join_callback(self, _):
+        webbrowser.open(self.join_link)
 
 
 if __name__ == '__main__':
