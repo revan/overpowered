@@ -71,3 +71,7 @@ def fetch_events(maxResults=10):
         )
         for event in events
     ]
+
+
+def logout():
+    os.remove(TOKEN_PATH)
