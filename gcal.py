@@ -2,7 +2,6 @@ import arrow
 import dataclasses
 import datetime
 from dateutil import parser
-import pytz
 
 import os.path
 from typing import *
@@ -16,7 +15,7 @@ SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 TOKEN_PATH = '/tmp/overpowered-token.json'
 
 
-@dataclasses.dataclass
+@dataclasses.dataclass(frozen=True)
 class CalendarEvent:
     name: str
     start: datetime.datetime
@@ -26,14 +25,23 @@ class CalendarEvent:
     def __post_init__(self):
         # Strip Clockwise emoji.
         if self.name.startswith('❇️ '):
-            self.name = self.name[3:]
+            object.__setattr__(self, 'name', self.name[3:])
 
     def display(self) -> str:
-        until = arrow.get(self.start).humanize()
+        until = self.start_human()
         if 'ago' in until:
-            return f'{self.name} ends {arrow.get(self.end).humanize()}'
+            return f'{self.name} ends {self.end_human()}'
         else:
             return f'{self.name} {until}'
+
+    def start_human(self) -> str:
+        return arrow.get(self.start).humanize()
+
+    def end_human(self) -> str:
+        return arrow.get(self.end).humanize()
+
+    def format_times(self) -> str:
+        return f'{self.start.strftime("%I:%M %p")} - {self.end.strftime("%I:%M %p")}'
 
 
 def _extract_join_link(event: dict):

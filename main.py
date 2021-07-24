@@ -1,8 +1,14 @@
+import arrow
+import json
+import webbrowser
+
 import rumps
 
 import gcal
 
 APP_TITLE = 'Overpowered'
+
+ACTIVATION_TYPE_ACTION = 2
 
 
 class OverpoweredApp(rumps.App):
@@ -13,14 +19,68 @@ class OverpoweredApp(rumps.App):
         self.logout_button = rumps.MenuItem('Logout and Quit')
         self.logout_button.set_callback(self._logout_callback)
 
+        self._have_notified = set()
+
     @rumps.timer(5)
-    def update_title(self, _):
+    def update_loop(self, _):
         events = gcal.fetch_events()
-        self.title = events[0].display()
+
         self.menu.clear()
         self.menu.update(e.display() for e in events[1:])
         self.menu.add(self.logout_button)
         self.menu.add(self.quit_button)
+
+        if events:
+            self.title = events[0].display()
+            about_to_start = (arrow.get(events[0].start) > arrow.utcnow() and
+                              arrow.get(events[0].start) - arrow.utcnow() < arrow.arrow.timedelta(minutes=1))
+            mid_event = (arrow.get(events[0].start)
+                         < arrow.utcnow()
+                         < arrow.get(events[0].end) - arrow.arrow.timedelta(minutes=1))
+            about_to_end = (arrow.get(events[0].end) > arrow.utcnow() and
+                            arrow.get(events[0].end) - arrow.utcnow() < arrow.arrow.timedelta(minutes=1))
+            if about_to_start or mid_event:
+                self._maybe_send_notification(events[0])
+            elif about_to_end and len(events) > 1:
+                # Special handling to notify of next event during current event for subsequent (or overlapping) events.
+                about_to_start = (arrow.get(events[1].start) > arrow.utcnow() and
+                                  arrow.get(events[1].start) - arrow.utcnow() < arrow.arrow.timedelta(minutes=1))
+                mid_event = (arrow.get(events[1].start)
+                             < arrow.utcnow()
+                             < arrow.get(events[1].end) - arrow.arrow.timedelta(minutes=1))
+                if about_to_start or mid_event:
+                    self._maybe_send_notification(events[1])
+        else:
+            self.title = 'No upcoming events.'
+
+    def _maybe_send_notification(self, event: gcal.CalendarEvent):
+        if event not in self._have_notified:
+            if event.join_link:
+                rumps.notification(
+                    title=event.name,
+                    subtitle=event.format_times(),
+                    message="Join Zoom call",
+                    action_button="Join",
+                    sound=True,
+                    data={'url': event.join_link},
+                )
+            else:
+                rumps.notification(
+                    title=event.name,
+                    subtitle=event.format_times(),
+                    message="No Zoom link",
+                    sound=True,
+                    data={},
+                )
+            self._have_notified.add(event)
+
+    @rumps.notifications
+    def handle_notification(self, notification):
+        print('notificaiton', notification)
+        if notification.get('activationType') == ACTIVATION_TYPE_ACTION and notification.get('url'):
+            webbrowser.open(notification.get('url'))
+
+
 
     def _logout_callback(self, _):
         gcal.logout()
@@ -29,4 +89,5 @@ class OverpoweredApp(rumps.App):
 
 if __name__ == '__main__':
     app = OverpoweredApp(APP_TITLE)
+    app.serializer = json
     app.run()
