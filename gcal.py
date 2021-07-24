@@ -1,6 +1,9 @@
+import arrow
 import dataclasses
 import datetime
 from dateutil import parser
+import pytz
+
 import os.path
 from typing import *
 
@@ -21,7 +24,11 @@ class CalendarEvent:
     join_link: Optional[str]
 
     def display(self) -> str:
-        return f'{self.name} - {self.start}'
+        until = arrow.get(self.start).humanize()
+        if 'ago' in until:
+            return f'{self.name} ends {arrow.get(self.end).humanize()}'
+        else:
+            return f'{self.name} {until}'
 
 
 def _extract_join_link(event: dict):
