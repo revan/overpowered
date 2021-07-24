@@ -23,6 +23,11 @@ class CalendarEvent:
     end: datetime.datetime
     join_link: Optional[str]
 
+    def __post_init__(self):
+        # Strip Clockwise emoji.
+        if self.name.startswith('❇️ '):
+            self.name = self.name[3:]
+
     def display(self) -> str:
         until = arrow.get(self.start).humanize()
         if 'ago' in until:
