@@ -2,9 +2,9 @@ import arrow
 import dataclasses
 import datetime
 from dateutil import parser
-
 import os.path
 from typing import *
+import re
 
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
@@ -13,6 +13,7 @@ from google.oauth2.credentials import Credentials
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 TOKEN_PATH = '/tmp/overpowered-token.json'
+ZOOM_URL_REGEX = re.compile(r'https?:\/\/\S*?zoom.us\/j\/\S+')
 
 
 @dataclasses.dataclass(frozen=True)
@@ -45,9 +46,16 @@ class CalendarEvent:
 
 
 def _extract_join_link(event: dict):
-    # TODO also look for link in event description
-    return ([ep.get('uri') for ep in event.get('conferenceData', {}).get('entryPoints', [])
+    conference_link = ([ep.get('uri') for ep in event.get('conferenceData', {}).get('entryPoints', [])
              if ep.get('entryPointType') == 'video'] + [None])[0]
+
+    if conference_link:
+        return conference_link
+
+    match = re.search(ZOOM_URL_REGEX, event.get('description', ''))
+    if match:
+        return match.group(0)
+    return None
 
 
 def _get_service():
