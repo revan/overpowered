@@ -1,0 +1,27 @@
+name: Build App
+on: [push]
+jobs:
+  build_app:
+    runs-on: macos-latest
+    steps:
+      - name: setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.8.6'
+
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: build
+        run: |
+          pip install -r requirements.txt
+          pip install -U py2app
+          sudo python setup.py py2app
+          sudo cp -r /opt/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/site-packages/google_api_python_client-2.14.0.dist-info dist/main.app/Contents/Resources/lib/python3.8/
+          mv dist/main.app dist/overpowered.app
+
+      - name: upload
+        uses: actions/upload-artifact@v2
+        with:
+          name: app
+          path: dist
