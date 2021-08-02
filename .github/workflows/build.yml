@@ -15,14 +15,14 @@ jobs:
 
       - name: create secret
         run: |
-          echo $CLIENT_SECRET > client_secret.json
+          echo "$CLIENT_SECRET" > client_secret.json
 
       - name: build
         run: |
           pip install -r requirements.txt
           pip install -U py2app
           sudo python setup.py py2app
-          sudo cp -r /opt/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/site-packages/google_api_python_client-2.14.0.dist-info dist/main.app/Contents/Resources/lib/python3.8/
+          sudo cp -r /Users/runner/hostedtoolcache/Python/3.8.6/x64/lib/python3.8/site-packages/google_api_python_client-2.14.0.dist-info dist/main.app/Contents/Resources/lib/python3.8/
           mv dist/main.app dist/overpowered.app
 
       - name: upload
