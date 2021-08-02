@@ -87,7 +87,6 @@ class OverpoweredApp(rumps.App):
 
     @rumps.notifications
     def handle_notification(self, notification):
-        print('notificaiton', notification)
         if notification.get('activationType') == ACTIVATION_TYPE_ACTION and notification.get('url'):
             webbrowser.open(notification.get('url'))
 
