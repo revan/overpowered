@@ -2,6 +2,7 @@ name: Build App
 on: [push]
 jobs:
   build_app:
+    environment: Build
     runs-on: macos-latest
     steps:
       - name: setup python
@@ -11,6 +12,10 @@ jobs:
 
       - name: checkout
         uses: actions/checkout@v2
+
+      - name: create secret
+        run: |
+          echo $CLIENT_SECRET > client_secret.json
 
       - name: build
         run: |
