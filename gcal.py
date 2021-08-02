@@ -77,6 +77,18 @@ def _get_service():
     return build('calendar', 'v3', credentials=creds)
 
 
+def _should_prune(event: CalendarEvent) -> bool:
+    # Ignore Clockwise padding
+    if event.name == 'Focus Time (via Clockwise)':
+        return True
+
+    # Ignore full-day events.
+    if event.end - event.start > datetime.timedelta(hours=7):
+        return True
+
+    return False
+
+
 def fetch_events(maxResults=10):
     service = _get_service()
     now = datetime.datetime.utcnow().isoformat() + 'Z'
@@ -90,7 +102,7 @@ def fetch_events(maxResults=10):
     ).execute()
     events = events_result.get('items', [])
 
-    return [
+    calendar_events = [
         CalendarEvent(
             name=event['summary'],
             start=parser.parse(event['start'].get('dateTime', event['start'].get('date'))),
@@ -98,6 +110,12 @@ def fetch_events(maxResults=10):
             join_link=_extract_join_link(event),
         )
         for event in events
+    ]
+
+    return [
+        ce
+        for ce in calendar_events
+        if not _should_prune(ce)
     ]
 
 
