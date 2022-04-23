@@ -1,5 +1,0 @@
-arrow==1.1.1
-python-dateutil==2.8.2
-google-api-python-client==2.14.0
-google-auth-oauthlib==0.4.4
-rumps==0.3.0
