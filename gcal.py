@@ -28,16 +28,19 @@ class CalendarEvent:
         if self.name.startswith('❇️ '):
             object.__setattr__(self, 'name', self.name[3:])
 
+    @property
     def display(self) -> str:
-        until = self.start_human()
+        until = self.start_human
         if 'ago' in until:
-            return f'{self.name} ends {self.end_human()}'
+            return f'{self.name} ends {self.end_human}'
         else:
             return f'{self.name} {until}'
 
+    @property
     def start_human(self) -> str:
         return arrow.get(self.start).humanize()
 
+    @property
     def end_human(self) -> str:
         return arrow.get(self.end).humanize()
 

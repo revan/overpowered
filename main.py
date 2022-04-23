@@ -29,7 +29,7 @@ class OverpoweredApp(rumps.App):
 
         self.menu.clear()
         if events:
-            self.title = events[0].display()
+            self.title = events[0].display
             if events[0].join_link:
                 self.join_link = events[0].join_link
                 self.join_button.set_callback(self._join_callback)
@@ -37,7 +37,7 @@ class OverpoweredApp(rumps.App):
             else:
                 self.menu.add("No link for next meeting.")
         self.menu.add(None)
-        self.menu.update(e.display() for e in events[1:] if arrow.get(e.end) < arrow.utcnow().shift(days=1))
+        self.menu.update(e.display for e in events[1:] if arrow.get(e.end) < arrow.utcnow().shift(days=1))
         self.menu.add(None)
         self.menu.add(self.logout_button)
         self.menu.add(self.quit_button)
