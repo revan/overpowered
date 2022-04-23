@@ -38,11 +38,21 @@ class CalendarEvent:
 
     @property
     def start_human(self) -> str:
-        return arrow.get(self.start).humanize()
+        start_arrow = arrow.get(self.start)
+        distance = start_arrow - arrow.now()
+
+        return start_arrow.humanize(
+            granularity='minute' if datetime.timedelta(minutes=57) < distance < datetime.timedelta(hours=3) else 'auto',
+        ).replace('just now', 'starts now')
 
     @property
     def end_human(self) -> str:
-        return arrow.get(self.end).humanize()
+        end_arrow = arrow.get(self.end)
+        distance = end_arrow - arrow.now()
+
+        return end_arrow.humanize(
+            granularity='minute' if datetime.timedelta(minutes=57) < distance < datetime.timedelta(hours=3) else 'auto',
+        ).replace('just now', 'now')
 
     def format_times(self) -> str:
         return f'{self.start.strftime("%I:%M %p")} - {self.end.strftime("%I:%M %p")}'
