@@ -13,7 +13,7 @@ from google.oauth2.credentials import Credentials
 
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 TOKEN_PATH = '/tmp/overpowered-token.json'
-ZOOM_URL_REGEX = re.compile(r'https?:\/\/\S*?zoom.us\/j\/\S+')
+ZOOM_URL_REGEX = re.compile(r'https?:\/\/(\S*?)\.zoom.us\/j\/(\S+)\?pwd=(\S+?)(?:#|&|$)\S*')
 
 
 @dataclasses.dataclass(frozen=True)
@@ -62,8 +62,16 @@ def _extract_join_link(event: dict) -> Optional[str]:
     return None
 
 
-def craft_app_link(join_link: str) -> str:
-    pass
+def _craft_app_link(join_link: str) -> Optional[str]:
+    match = re.match(ZOOM_URL_REGEX, join_link)
+    if not match or len(match.groups()) != 3:
+        return None
+    return f'zoommtg://{match.group(1)}.zoom.us/join?action=join&confno={match.group(2)}&pwd={match.group(3)}&browser=chrome'
+
+
+def extract_app_link(event: dict) -> Optional[str]:
+    join_link = _extract_join_link(event)
+    return join_link and _craft_app_link(join_link) or None
 
 
 def _get_service():
@@ -115,7 +123,7 @@ def fetch_events(maxResults=10) -> List[CalendarEvent]:
             name=event['summary'],
             start=parser.parse(event['start'].get('dateTime', event['start'].get('date'))),
             end=parser.parse(event['end'].get('dateTime', event['end'].get('date'))),
-            join_link=_extract_join_link(event),
+            join_link=extract_app_link(event),
         )
         for event in events
     ]
