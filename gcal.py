@@ -45,9 +45,13 @@ class CalendarEvent:
         return f'{self.start.strftime("%I:%M %p")} - {self.end.strftime("%I:%M %p")}'
 
 
-def _extract_join_link(event: dict):
-    conference_link = ([ep.get('uri') for ep in event.get('conferenceData', {}).get('entryPoints', [])
-             if ep.get('entryPointType') == 'video'] + [None])[0]
+def _extract_join_link(event: dict) -> Optional[str]:
+    conference_link = (
+            [
+                ep.get('uri') for ep in event.get('conferenceData', {}).get('entryPoints', [])
+                if ep.get('entryPointType') == 'video'
+            ] + [None]
+    )[0]
 
     if conference_link:
         return conference_link
@@ -89,7 +93,7 @@ def _should_prune(event: CalendarEvent) -> bool:
     return False
 
 
-def fetch_events(maxResults=10):
+def fetch_events(maxResults=10) -> List[CalendarEvent]:
     service = _get_service()
     now = datetime.datetime.utcnow().isoformat() + 'Z'
 
@@ -119,5 +123,5 @@ def fetch_events(maxResults=10):
     ]
 
 
-def logout():
+def logout() -> None:
     os.remove(TOKEN_PATH)
