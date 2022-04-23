@@ -7,3 +7,9 @@ repos:
         entry: 'poetry run pyre incremental'
         pass_filenames: false
         files: '\.py'
+      - id: pytest
+        name: 'pytest'
+        language: system
+        entry: 'poetry run pytest'
+        pass_filenames: false
+        files: '\.py'

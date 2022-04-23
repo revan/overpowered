@@ -6,3 +6,4 @@ client_secret.json
 .pyre/
 build/
 dist/
+__pycache__/

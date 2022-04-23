@@ -62,6 +62,10 @@ def _extract_join_link(event: dict) -> Optional[str]:
     return None
 
 
+def craft_app_link(join_link: str) -> str:
+    pass
+
+
 def _get_service():
     creds = None
     if os.path.exists(TOKEN_PATH):
