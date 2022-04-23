@@ -2,7 +2,7 @@ from setuptools import setup
 
 
 APP = ['main.py']
-DATA_FILES = ['client_secret.json']
+DATA_FILES = [('', ['client_secret.json'])]
 OPTIONS = {
     'argv_emulation': True,
     'plist': {

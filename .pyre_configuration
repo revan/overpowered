@@ -1,0 +1,8 @@
+{
+  "site_package_search_strategy": "all",
+  "source_directories": [
+    "."
+  ],
+  "taint_models_path": "/Users/revan/repo/overpowered/.venv/lib/pyre_check/taint",
+  "ignore_all_errors": [".venv/", "build/", "dist/"]
+}

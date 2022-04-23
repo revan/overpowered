@@ -1,7 +1,8 @@
 .idea
 .DS_store
 client_secret.json
-venv/
+.venv/
 .eggs/
+.pyre/
 build/
 dist/
